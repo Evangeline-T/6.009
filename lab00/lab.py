@@ -53,11 +53,18 @@ def echo_conv(sound, num_echoes, delay, scale):
 
 
 def pan(sound):
-    raise NotImplementedError
+    left = sound['left'][:]
+    right = sound['right'][:]
+    dur = len(left)
+    for i in range(dur):
+        left[i] *= (1 - i / (dur - 1))
+        right[i] *= ( i / (dur - 1))
+    return {'rate': sound['rate'], 'left': left, 'right': right}
 
 
 def remove_vocals(sound):
-    raise NotImplementedError
+    sample = [l - r for l, r in zip(sound['left'], sound['right'])]
+    return {'rate': sound['rate'], 'samples': sample}
 
 
 def bass_boost_kernel(N, scale=0):
@@ -181,5 +188,12 @@ if __name__ == '__main__':
     # ice_and_chilli = load_wav('sounds/ice_and_chilli.wav')
     # write_wav(convolve(ice_and_chilli, bass_boost_kernel(1000, 1.5)), 'convolved_ice.wav')
     
-    chord = load_wav('sounds/chord.wav')
-    write_wav(echo(chord, 5, 0.3, 0.6), 'echoed_chord.wav')
+    # chord = load_wav('sounds/chord.wav')
+    # write_wav(echo(chord, 5, 0.3, 0.6), 'echoed_chord.wav')
+
+    # car = load_wav('sounds/car.wav', stereo=True)
+    # write_wav(pan(car), 'car_pan.wav')
+
+    lookout_mountain = load_wav('sounds/lookout_mountain.wav', stereo=True)
+    write_wav(remove_vocals(lookout_mountain), 'lookout_mountain_remove_vocal.wav')
+    pass
