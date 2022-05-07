@@ -47,8 +47,7 @@ def echo(sound, num_echoes, delay, scale):
 def echo_conv(sound, num_echoes, delay, scale):
     # warning: very slow
     sample_delay = round(delay * sound['rate'])
-    echo_filter = [[*[0 for _ in range(sample_delay - 1)], scale ** i] for i in range(1, num_echoes + 1)]
-    echo_filter = [1] + sum(echo_filter, [])
+    echo_filter = [1] + sum([[*[0 for _ in range(sample_delay - 1)], scale ** i] for i in range(1, num_echoes + 1)], [])
     return convolve(sound, echo_filter)
 
 
@@ -194,6 +193,6 @@ if __name__ == '__main__':
     # car = load_wav('sounds/car.wav', stereo=True)
     # write_wav(pan(car), 'car_pan.wav')
 
-    lookout_mountain = load_wav('sounds/lookout_mountain.wav', stereo=True)
-    write_wav(remove_vocals(lookout_mountain), 'lookout_mountain_remove_vocal.wav')
+    # lookout_mountain = load_wav('sounds/lookout_mountain.wav', stereo=True)
+    # write_wav(remove_vocals(lookout_mountain), 'lookout_mountain_remove_vocal.wav')
     pass
