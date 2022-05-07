@@ -1,20 +1,55 @@
 # No Imports Allowed!
 
 
+from git import safe_decode
+from matplotlib.pyplot import sca
+
+
 def backwards(sound):
-    raise NotImplementedError
+    back = sound.copy()
+    back['samples'] = back['samples'][::-1]
+    return back
 
 
 def mix(sound1, sound2, p):
-    raise NotImplementedError
+    if sound1['rate'] != sound2['rate']:
+        return None
+    mixed = {'rate': sound1['rate'], 'samples': []}
+    for s1, s2 in zip(sound1['samples'], sound2['samples']):
+        mixed['samples'].append(p * s1 + (1 - p) * s2)
+    return mixed
 
 
 def convolve(sound, kernel):
-    raise NotImplementedError
+    sound_len = len(sound['samples'])
+    kernel_len = len(kernel)
+    convolved = [ 0 for _ in range(sound_len + kernel_len - 1) ]
+    for i in range(kernel_len):
+        for j in range(sound_len):
+            convolved[i + j] += kernel[i] * sound['samples'][j]
+    return {'rate': sound['rate'], 'samples': convolved}
 
 
 def echo(sound, num_echoes, delay, scale):
-    raise NotImplementedError
+    sample_delay = round(delay * sound['rate'])
+    sound_len = len(sound['samples'])
+    sample_len =  num_echoes * sample_delay + sound_len
+    new_sample = [ 0 for _ in range(sample_len) ]
+    echos = sound['samples'].copy()
+    for i in range(0, sample_len, sample_delay):
+        if i + sound_len > sample_len:
+            break
+        for j in range(sound_len):
+            new_sample[i + j] += echos[j]
+        echos = [echo * scale for echo in echos]
+    return {'rate': sound['rate'], 'samples': new_sample}
+
+def echo_conv(sound, num_echoes, delay, scale):
+    # warning: very slow
+    sample_delay = round(delay * sound['rate'])
+    echo_filter = [[*[0 for _ in range(sample_delay - 1)], scale ** i] for i in range(1, num_echoes + 1)]
+    echo_filter = [1] + sum(echo_filter, [])
+    return convolve(sound, echo_filter)
 
 
 def pan(sound):
@@ -136,6 +171,15 @@ if __name__ == '__main__':
     # here is an example of loading a file (note that this is specified as
     # sounds/hello.wav, rather than just as hello.wav, to account for the
     # sound files being in a different directory than this file)
-    hello = load_wav('sounds/hello.wav')
+    # mystery = load_wav('sounds/mystery.wav')
+    # write_wav(backwards(mystery), 'mystery_reversed.wav')
 
-    # write_wav(backwards(hello), 'hello_reversed.wav')
+    # synth = load_wav('sounds/synth.wav')
+    # water = load_wav('sounds/water.wav')
+    # write_wav(mix(synth, water, 0.2), 'mix_of_synth_water.wav')
+
+    # ice_and_chilli = load_wav('sounds/ice_and_chilli.wav')
+    # write_wav(convolve(ice_and_chilli, bass_boost_kernel(1000, 1.5)), 'convolved_ice.wav')
+    
+    chord = load_wav('sounds/chord.wav')
+    write_wav(echo(chord, 5, 0.3, 0.6), 'echoed_chord.wav')
