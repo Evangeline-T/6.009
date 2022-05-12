@@ -25,6 +25,8 @@ def convolve(sound, kernel):
     kernel_len = len(kernel)
     convolved = [ 0 for _ in range(sound_len + kernel_len - 1) ]
     for i in range(kernel_len):
+        if kernel[i] == 0:
+            continue
         for j in range(sound_len):
             convolved[i + j] += kernel[i] * sound['samples'][j]
     return {'rate': sound['rate'], 'samples': convolved}
